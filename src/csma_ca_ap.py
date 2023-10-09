@@ -14,6 +14,12 @@ Usage:
     - The module reacts to various events to simulate the behavior of an AP in a CSMA/CA network.
 """
 
-class CSMA_CA_AP:
-    # Class implementation here
-    pass
+# csma_ca_tx.py
+from utility.logger_config import logger
+
+class CsmaCaAp:
+    def __init__(self, id, params):
+        logger.debug("CsmaCaTx instance created.")
+        self.id = id
+        self.params = params
+        # ... (other methods and attributes) ...

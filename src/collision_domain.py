@@ -16,6 +16,26 @@ Usage:
     - Each device handles the event based on its logic and state.
 """
 
+# collision_domain.py
+from utility.logger_config import logger
+from src.csma_ca_ap import CsmaCaAp
+from src.csma_ca_tx import CsmaCaTx
 class CollisionDomain:
-    # Class implementation here
-    pass
+    def __init__(self, id):
+        logger.debug("CollisionDomain instance created.")
+        self.id = id
+        self.tx_nodes = []
+        self.ap_nodes = []
+
+    def add(self, node):
+        """
+        Adds a node to the collision domain. Nodes are added to their respective lists based on their type.
+        :param node: The node to be added, can be of type CsmaCaTx or CsmaCaAp.
+        """
+        if isinstance(node, CsmaCaTx):
+            self.tx_nodes.append(node)
+        elif isinstance(node, CsmaCaAp):
+            self.ap_nodes.append(node)
+        else:
+            raise ValueError("Invalid node type. Node must be of type CsmaCaTx or CsmaCaAp.")
+

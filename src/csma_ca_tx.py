@@ -14,7 +14,11 @@ Responsibilities:
 Usage:
     - The module reacts to various events to simulate the behavior of a transmitting station in a CSMA/CA network.
 """
+# csma_ca_tx.py
+from utility.logger_config import logger
 
-class CSMA_CA_TX:
-    # Class implementation here
-    pass
+class CsmaCaTx:
+    def __init__(self, id, params):
+        logger.debug("CsmaCaTx instance created.")
+        self.id = id
+        self.params = params

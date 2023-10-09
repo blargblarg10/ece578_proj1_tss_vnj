@@ -1,0 +1,15 @@
+{
+    "data_frame_size": 1500,
+    "ACK_size": 3,
+    "RTS_size": 3,
+    "CTS_size": 3,
+    "slot_duration": 10,
+    "DIFS_duration": 4,
+    "SIFS_duration": 1,
+    "bandwidth": 10,
+    "CW0": 8,
+    "CWmax": 512,
+    "lambda_A": [100, 200, 300, 500, 800, 1000],
+    "simulation_time": 10
+  }
+  
