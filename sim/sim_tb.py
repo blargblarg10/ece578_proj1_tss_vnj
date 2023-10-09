@@ -43,7 +43,12 @@ def create_and_run_simulation(params):
     for cd_id, cd_params in enumerate(test_params['collision_domains'].values()):
         cd = CollisionDomain(cd_id)
         for tx_node_id in cd_params['tx_nodes']:
-            tx_node = CsmaCaTx(tx_node_id, sim_params, generate_poisson_traffic(sim_params['lambda_A'], sim_params['simulation_time'], sim_params['slot_duration']))
+            if "arrivals" in tx_node_id:
+                arrivals = tx_node_id["arrivals"]
+            else:
+                arrivals = generate_poisson_traffic(sim_params['lambda_A'], sim_params['simulation_time'], sim_params['slot_duration'])
+            
+            tx_node = CsmaCaTx(tx_node_id["id"], sim_params, arrivals)
             cd.add(tx_node)
         for ap_node_id in cd_params['ap_nodes']:
             ap_node = CsmaCaAp(ap_node_id, sim_params)
@@ -51,9 +56,7 @@ def create_and_run_simulation(params):
         network.add(cd)
         
     network.print_network_structure()
-    quit()
-    # Run simulation
-    1
+    network.run()
 
 def main():
     parser = argparse.ArgumentParser(description='Run the network simulation with specified test parameters.')
@@ -63,7 +66,7 @@ def main():
     args = parser.parse_args()
 
     if args.test_file is None:
-        args.test_file = 'simple_test'
+        args.test_file = 'hw2_1'
 
     args.test_file = os.path.join('sim/tst', args.test_file + '.json')
     if not os.path.exists(args.test_file):

@@ -1,7 +1,0 @@
-{
-    "lambda_A": 100,
-    "num_tx_nodes": 2,
-    "num_ap_nodes": 1,
-    "collision_domains": {"CD1": {"tx_nodes": [1, 2],"ap_nodes": [1]}}
-  }
-  

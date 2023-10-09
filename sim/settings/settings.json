@@ -9,7 +9,7 @@
     "bandwidth": 10,
     "CW0": 8,
     "CWmax": 512,
-    "lambda_A": [100, 200, 300, 500, 800, 1000],
+    "lambda_A": 100,
     "simulation_time": 10
   }
   

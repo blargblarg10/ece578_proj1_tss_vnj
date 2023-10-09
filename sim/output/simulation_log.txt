@@ -1,24 +1,35 @@
-2023-10-09 00:26:37,953 - INFO - Starting CSMA/CA simulation testbench
-2023-10-09 00:26:37,963 - INFO - Using simulation parameters: {
-  "data_frame_size": 1500,
+2023-10-09 02:28:19,882 - INFO - Starting CSMA/CA simulation testbench
+2023-10-09 02:28:19,892 - INFO - Using simulation parameters: {
+  "data_frame_size": 5243,
   "ACK_size": 3,
   "RTS_size": 3,
   "CTS_size": 3,
   "slot_duration": 10,
-  "DIFS_duration": 4,
+  "DIFS_duration": 1,
   "SIFS_duration": 1,
   "bandwidth": 10,
   "CW0": 8,
   "CWmax": 512,
   "lambda_A": 100,
   "simulation_time": 10,
+  "vcs": 0,
   "num_tx_nodes": 2,
   "num_ap_nodes": 1,
   "collision_domains": {
     "CD1": {
       "tx_nodes": [
-        1,
-        2
+        {
+          "id": 1,
+          "arrivals": [
+            0
+          ]
+        },
+        {
+          "id": 2,
+          "arrivals": [
+            0
+          ]
+        }
       ],
       "ap_nodes": [
         1
@@ -26,3 +37,7 @@
     }
   }
 }
+2023-10-09 02:28:23,050 - INFO - Network Structure:
+2023-10-09 02:28:23,051 - INFO - Collision Domain ID: 0
+2023-10-09 02:28:23,051 - INFO -   Tx Nodes: 1, 2
+2023-10-09 02:28:23,051 - INFO -   AP Nodes: 1
