@@ -14,6 +14,7 @@ Usage:
 import argparse
 import json
 import os
+from utility.poisson_traffic import generate_poisson_traffic
 from utility.logger_config import setup_logger, logger
 from src.csma_ca_ap import CsmaCaAp
 from src.csma_ca_tx import CsmaCaTx
@@ -42,7 +43,7 @@ def create_and_run_simulation(params):
     for cd_id, cd_params in enumerate(test_params['collision_domains'].values()):
         cd = CollisionDomain(cd_id)
         for tx_node_id in cd_params['tx_nodes']:
-            tx_node = CsmaCaTx(tx_node_id, sim_params)
+            tx_node = CsmaCaTx(tx_node_id, sim_params, generate_poisson_traffic(sim_params['lambda_A'], sim_params['simulation_time'], sim_params['slot_duration']))
             cd.add(tx_node)
         for ap_node_id in cd_params['ap_nodes']:
             ap_node = CsmaCaAp(ap_node_id, sim_params)
@@ -52,7 +53,7 @@ def create_and_run_simulation(params):
     network.print_network_structure()
     quit()
     # Run simulation
-    # network.run()
+    1
 
 def main():
     parser = argparse.ArgumentParser(description='Run the network simulation with specified test parameters.')

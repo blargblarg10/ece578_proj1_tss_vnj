@@ -18,7 +18,8 @@ Usage:
 from utility.logger_config import logger
 
 class CsmaCaTx:
-    def __init__(self, id, params):
+    def __init__(self, id, params, packet_arrival_times):
         logger.debug("CsmaCaTx instance created.")
         self.id = id
         self.params = params
+        self.tx_send_list = packet_arrival_times
