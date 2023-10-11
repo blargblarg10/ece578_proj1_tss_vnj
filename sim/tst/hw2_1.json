@@ -1,12 +1,13 @@
 {
-    "data_frame_size": 5243,
-    "ACK_size": 3,
-    "DIFS_duration": 1,
-    "SIFS_duration": 1,
+    "sim_overwrite" :
+      {"data_frame_size": 5243,
+      "ACK_size": 3,
+      "DIFS_duration": 1,
+      "SIFS_duration": 1,
+      "vcs": false},
 
-    "vcs": 0,
-    "num_tx_nodes": 2,
-    "num_ap_nodes": 1,
-    "collision_domains": {"CD1": {"tx_nodes": [{"id":1, "arrivals":[0]}, {"id":2, "arrivals":[0]}],"ap_nodes": [1]}}
-  }
-  
+    "tx_nodes": [{"id":1, "cd":[0], "arrivals": [0]}, {"id":2, "cd":[1], "arrivals": [0]}],
+    "ap_nodes": [{"id":1, "cd":[0, 1]}]
+
+}
+ 

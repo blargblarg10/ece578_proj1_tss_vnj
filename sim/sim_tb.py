@@ -18,7 +18,6 @@ from utility.poisson_traffic import generate_poisson_traffic
 from utility.logger_config import setup_logger, logger
 from src.csma_ca_ap import CsmaCaAp
 from src.csma_ca_tx import CsmaCaTx
-from src.collision_domain import CollisionDomain
 from src.network import Network
 
 def load_parameters(file_name):
@@ -26,34 +25,32 @@ def load_parameters(file_name):
         return json.load(file)
 
 def create_and_run_simulation(params):
-    setup_logger(params.debug)
     logger.info('Starting CSMA/CA simulation testbench')
 
     sim_params = load_parameters('sim/settings/settings.json')
     test_params = load_parameters(params.test_file)
 
     # Overwrite simulation parameters with test parameters if they are specified
-    for key, value in test_params.items():
-        sim_params[key] = value
+    if "sim_overwrite" in test_params:
+        for key, value in test_params["sim_overwrite"].items():
+            sim_params[key] = value
 
-    logger.info(f'Using simulation parameters: {json.dumps(sim_params, indent=2)}')
+    logger.info(f'Using simulation parameters:\n {json.dumps(sim_params, indent=2)}')
 
     # Create network with collision domains
-    network = Network()
-    for cd_id, cd_params in enumerate(test_params['collision_domains'].values()):
-        cd = CollisionDomain(cd_id)
-        for tx_node_id in cd_params['tx_nodes']:
-            if "arrivals" in tx_node_id:
-                arrivals = tx_node_id["arrivals"]
-            else:
-                arrivals = generate_poisson_traffic(sim_params['lambda_A'], sim_params['simulation_time'], sim_params['slot_duration'])
-            
-            tx_node = CsmaCaTx(tx_node_id["id"], sim_params, arrivals)
-            cd.add(tx_node)
-        for ap_node_id in cd_params['ap_nodes']:
-            ap_node = CsmaCaAp(ap_node_id, sim_params)
-            cd.add(ap_node)
-        network.add(cd)
+    network = Network(sim_params)
+    for tx_node in test_params['tx_nodes']:
+        if "arrivals" in tx_node:
+            arrivals = tx_node["arrivals"]
+        else:
+            arrivals = generate_poisson_traffic(sim_params['lambda_A'], sim_params['simulation_time'], sim_params['slot_duration'])
+        
+        node = CsmaCaTx(f"Tx_Node_{tx_node['id']}", tx_node['cd'],sim_params, arrivals)
+        network.add(node)
+
+    for ap_node in test_params['ap_nodes']:
+        node = CsmaCaAp(f"AP_Node_{ap_node['id']}", ap_node['cd'],sim_params)
+        network.add(node)
         
     network.print_network_structure()
     network.run()

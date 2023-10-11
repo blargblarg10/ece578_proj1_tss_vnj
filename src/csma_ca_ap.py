@@ -16,10 +16,26 @@ Usage:
 
 # csma_ca_tx.py
 from utility.logger_config import logger
-
+from src.proj_data_classes import Event
 class CsmaCaAp:
-    def __init__(self, id, params):
+    def __init__(self, id, collision_domain, params):
         logger.debug("CsmaCaTx instance created.")
-        self.id = id
-        self.params = params
-        # ... (other methods and attributes) ...
+        self.ID = id
+        self.CD = collision_domain
+        self.PARM = params
+        
+        self.event = None
+
+    def receive_event(self, event):
+        """
+        Receives a BroadcastEvent and processes it accordingly.
+        :param event: The event to be processed.
+        """
+        pass
+    
+    def declare_event(self, timestamp):
+        """
+        Gets the next event from the node.
+        :return: The next event from the node.
+        """
+        pass

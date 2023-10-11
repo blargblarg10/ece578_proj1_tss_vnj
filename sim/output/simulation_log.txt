@@ -1,43 +1,30 @@
-2023-10-09 02:28:19,882 - INFO - Starting CSMA/CA simulation testbench
-2023-10-09 02:28:19,892 - INFO - Using simulation parameters: {
+2023-10-10 20:06:50,897 - INFO - Starting CSMA/CA simulation testbench
+2023-10-10 20:06:50,907 - INFO - Using simulation parameters:
+ {
   "data_frame_size": 5243,
   "ACK_size": 3,
   "RTS_size": 3,
   "CTS_size": 3,
   "slot_duration": 10,
-  "DIFS_duration": 1,
-  "SIFS_duration": 1,
+  "DIFS_size": 4,
+  "SIFS_size": 1,
   "bandwidth": 10,
   "CW0": 8,
   "CWmax": 512,
   "lambda_A": 100,
   "simulation_time": 10,
-  "vcs": 0,
-  "num_tx_nodes": 2,
-  "num_ap_nodes": 1,
-  "collision_domains": {
-    "CD1": {
-      "tx_nodes": [
-        {
-          "id": 1,
-          "arrivals": [
-            0
-          ]
-        },
-        {
-          "id": 2,
-          "arrivals": [
-            0
-          ]
-        }
-      ],
-      "ap_nodes": [
-        1
-      ]
-    }
-  }
+  "DIFS_duration": 1,
+  "SIFS_duration": 1,
+  "vcs": false
 }
-2023-10-09 02:28:23,050 - INFO - Network Structure:
-2023-10-09 02:28:23,051 - INFO - Collision Domain ID: 0
-2023-10-09 02:28:23,051 - INFO -   Tx Nodes: 1, 2
-2023-10-09 02:28:23,051 - INFO -   AP Nodes: 1
+2023-10-10 20:06:50,908 - DEBUG - Network instance created.
+2023-10-10 20:06:50,908 - DEBUG - CsmaCaTx instance created.
+2023-10-10 20:06:50,909 - DEBUG - CsmaCaTx instance created.
+2023-10-10 20:06:50,909 - DEBUG - CsmaCaTx instance created.
+2023-10-10 20:06:50,910 - INFO - Network Structure:
+2023-10-10 20:06:50,910 - INFO - Collision Domain ID: 0
+2023-10-10 20:06:50,911 - INFO -   Tx Nodes: Tx_Node_1
+2023-10-10 20:06:50,911 - INFO -   AP Nodes: AP_Node_1
+2023-10-10 20:06:50,912 - INFO - Collision Domain ID: 1
+2023-10-10 20:06:50,912 - INFO -   Tx Nodes: Tx_Node_2
+2023-10-10 20:06:50,913 - INFO -   AP Nodes: AP_Node_1

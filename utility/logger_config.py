@@ -21,9 +21,27 @@ def setup_logger(debug=False, log_file='sim/output/simulation_log.txt'):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     
-    logging.basicConfig(filename=log_file, level=log_level,
-                        format='%(asctime)s - %(levelname)s - %(message)s', filemode='w')
+    # Create logger
     logger = logging.getLogger()
+    logger.setLevel(log_level)
+
+    # Create file handler which logs even debug messages
+    file_handler = logging.FileHandler(log_file, mode='w')
+    file_handler.setLevel(log_level)
+
+    # Create console handler with a higher log level
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(log_level)
+
+    # Create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+
+    # Add the handlers to the logger
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
     return logger
 
-logger = setup_logger()
+logger = setup_logger(debug=True)

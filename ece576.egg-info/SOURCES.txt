@@ -9,6 +9,7 @@ src/collision_domain.py
 src/csma_ca_ap.py
 src/csma_ca_tx.py
 src/network.py
+src/proj_data_classes.py
 utility/__init__.py
 utility/logger_config.py
 utility/poisson_traffic.py

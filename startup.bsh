@@ -32,5 +32,6 @@ export GIT_PROJ_DIR=$SCRIPT_DIR
 echo "GIT_PROJ_DIR is set to $GIT_PROJ_DIR"
 
 # Install the current area as an editable package
+pip install -r requirements.txt
 pip install -e .
 echo "Completed."
