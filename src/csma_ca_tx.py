@@ -24,7 +24,7 @@ class TX_STATE(Enum):
     WAITING_FOR_ACK = auto()
     TRANSMITTING = auto()
 class CsmaCaTx:
-    def __init__(self, id, collision_domain, params, packet_arrival_times):
+    def __init__(self, id, collision_domain, params, packet_arrival_times, visualizer=None):
         logger.debug("CsmaCaTx instance created.")
         
         # Constants for Sender
@@ -37,7 +37,7 @@ class CsmaCaTx:
         self.CW_MAX = params['CWmax']
         self.TX_ARRIVAL_LIST = packet_arrival_times
         
-        self.PACKAGE_LENGTH = params['data_frame_size'] / (params['bandwidth'] * (2 ** 10) * params['slot_duration'])
+        self.PACKAGE_LENGTH = int(params['data_frame_size'] / (params['bandwidth'] * (2 ** 20)) / (params['slot_duration'] * 10 ** -6))
 
         # Variables for Sender
         self.backoff = 0
@@ -50,6 +50,16 @@ class CsmaCaTx:
         
         # Histor of for the Sender
         self.history = []
+        self.visualizer = visualizer
+
+    def log_and_notify(self, timestamp, event_name, duration):
+            """
+            Appends event to history log and notifies observer.
+            """
+            self.history.append((timestamp, event_name, duration))
+            if self.visualizer is not None:
+                self.visualizer.plot_event(self.ID, timestamp, event_name, duration)
+
 
     def set_event(self, timestamp):
         self.event = Event("tx", self.ID, timestamp, self.PACKAGE_LENGTH, self.package_end)
@@ -65,7 +75,7 @@ class CsmaCaTx:
         Determines the timestamps for the declared event
         """
         # Add difs to timestamp and record history
-        self.history.append((event_timestamp, "DIFS", self.DIFS))
+        self.log_and_notify(event_timestamp, "DIFS", self.DIFS)
         event_timestamp += self.DIFS
         
         # Set the backoff start to this timestamp in case it is not chose to transmit
@@ -90,7 +100,8 @@ class CsmaCaTx:
         """
         self.state = TX_STATE.WAITING_FOR_ACK
         # Add transmit time to history
-        self.history.append((self.event.timestamp, "TX", self.event.duration))
+        self.log_and_notify(self.event.timestamp, "DATA", self.PACKAGE_LENGTH)
+        self.log_and_notify(self.event.timestamp + self.PACKAGE_LENGTH, "SIFS", self.SIFS)
     
     def collision_process(self):
         """
@@ -119,7 +130,7 @@ class CsmaCaTx:
         # ACK Received
         if event.node_type == NodeType.AP:
             # ACK Received in Wrong Slot (Collision)
-            if event.start_time != self.expected_ack_slot:
+            if event.timestamp != self.expected_ack_slot:
                 self.collision_process()
             # ACK Received in Correct Slot
             else:
@@ -127,7 +138,7 @@ class CsmaCaTx:
                 self.event = None
                 self.state = self.TRANSMITTING
         # Event time beyond expected ACK slot (Collision)
-        elif event.start_time > self.expected_ack_slot:
+        elif event.timestamp > self.expected_ack_slot:
             logger.error(f"TX_NODE_{self.ID}: Did not receive ACK from AP in time. Simulation Failed.")
             quit()
             
@@ -141,12 +152,12 @@ class CsmaCaTx:
         expected_slot_free = event.nav
         
         # Do nothing if the event will end before node wants to transmit
-        if self.event.start_time < expected_slot_free:
+        if self.event.timestamp > expected_slot_free:
             return
         
         # Check if the event is within the backoff window
-        if event.start_time < self.backoff_start + self.backoff:
-            self.backoff -= event.start_time - self.backoff_start
+        if event.timestamp < self.backoff_start + self.backoff:
+            self.backoff -= event.timestamp - self.backoff_start
         
         # Set the start time to the end of the event
         event_timestamp = expected_slot_free + 1
@@ -175,12 +186,16 @@ class CsmaCaTx:
         Gets the next event from the node.
         :return: The next event from the node.
         """
+        # If Waiting for an ACK, do nothing
+        if self.state == TX_STATE.WAITING_FOR_ACK:
+            return None
+
         # An Event is already trying to occur
-        if self.event:
+        elif self.event:
             return self.event
         
         # If an event is not already made, and their are arrivals
-        if self.TX_ARRIVAL_LIST:
+        elif self.TX_ARRIVAL_LIST:
             # New Packet. Retrieve next packet arrival time
             event_arr = self.TX_ARRIVAL_LIST.pop(0)
             
@@ -195,3 +210,6 @@ class CsmaCaTx:
 
             # Package duration will tell other nodes how long they have to wait before they can try to send
             self.set_event( event_timestamp)
+            return self.event
+        else:
+            return None

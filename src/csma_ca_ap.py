@@ -18,7 +18,7 @@ Usage:
 from utility.logger_config import logger
 from src.proj_data_classes import Event
 class CsmaCaAp:
-    def __init__(self, id, collision_domain, params):
+    def __init__(self, id, collision_domain, params, visualizer=None):
         logger.debug("CsmaCaTx instance created.")
         self.ID = id
         self.CD = collision_domain

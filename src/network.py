@@ -9,7 +9,7 @@ class Network:
     def __init__(self, sim_params):
         logger.debug("Network instance created.")
         self.nodes = []
-        self.slot_limit = sim_params['simulation_time']/sim_params['slot_duration']
+        self.slot_limit = int(sim_params['simulation_time']/(sim_params['slot_duration'] * 10 ** -6))
         # ... (other methods and attributes) ...
         
     def add(self, node):
@@ -59,8 +59,7 @@ class Network:
         while current_slot < self.slot_limit:
             nodes_w_events = []
             for node in self.nodes:
-                node.declare_event(current_slot)
-                if node.event is not None:
+                if node.declare_event(current_slot) is not None:
                     nodes_w_events.append(node.event)
             earliest_timestamp = min(event.timestamp for event in nodes_w_events)
             earliest_events = [event for event in nodes_w_events if event.timestamp == earliest_timestamp]
@@ -70,11 +69,13 @@ class Network:
                 corresponding_node = next(node for node in self.nodes if node.ID == event.node_id)
                 corresponding_node.inform_broadcasting()
 
-            # Broadcast the events
-            # for event in earliest_events:
-            #     self.broadcast(event)
+            # Inform other nodes of the event
+            for node in self.nodes:
+                if node.ID not in [event.node_id for event in earliest_events]:
+                    for event in earliest_events:
+                        node.receive_event(event)
 
-            self.current_slot = earliest_timestamp  # Update current slot to the timestamp of the earliest event
+            current_slot = earliest_timestamp  # Update current slot to the timestamp of the earliest event
 
             elapsed_time = time.time() - start_time
             if elapsed_time > timeout:

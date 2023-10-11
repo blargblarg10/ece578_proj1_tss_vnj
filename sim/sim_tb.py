@@ -16,6 +16,7 @@ import json
 import os
 from utility.poisson_traffic import generate_poisson_traffic
 from utility.logger_config import setup_logger, logger
+from utility.plot_timeline import EventVisualizer
 from src.csma_ca_ap import CsmaCaAp
 from src.csma_ca_tx import CsmaCaTx
 from src.network import Network
@@ -25,6 +26,8 @@ def load_parameters(file_name):
         return json.load(file)
 
 def create_and_run_simulation(params):
+    visualizer = EventVisualizer()
+    
     logger.info('Starting CSMA/CA simulation testbench')
 
     sim_params = load_parameters('sim/settings/settings.json')
@@ -45,13 +48,14 @@ def create_and_run_simulation(params):
         else:
             arrivals = generate_poisson_traffic(sim_params['lambda_A'], sim_params['simulation_time'], sim_params['slot_duration'])
         
-        node = CsmaCaTx(f"Tx_Node_{tx_node['id']}", tx_node['cd'],sim_params, arrivals)
+        node = CsmaCaTx(f"Tx_Node_{tx_node['id']}", tx_node['cd'],sim_params, arrivals, visualizer)
         network.add(node)
 
     for ap_node in test_params['ap_nodes']:
-        node = CsmaCaAp(f"AP_Node_{ap_node['id']}", ap_node['cd'],sim_params)
+        node = CsmaCaAp(f"AP_Node_{ap_node['id']}", ap_node['cd'],sim_params, visualizer)
         network.add(node)
-        
+
+    visualizer.initialize(network.nodes)
     network.print_network_structure()
     network.run()
 
