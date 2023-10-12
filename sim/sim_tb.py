@@ -26,7 +26,8 @@ def load_parameters(file_name):
         return json.load(file)
 
 def create_and_run_simulation(params):
-    visualizer = EventVisualizer()
+    visualizer = None
+    # visualizer = EventVisualizer()
     
     logger.info('Starting CSMA/CA simulation testbench')
 
@@ -46,7 +47,7 @@ def create_and_run_simulation(params):
         if "arrivals" in tx_node:
             arrivals = tx_node["arrivals"]
         else:
-            arrivals = generate_poisson_traffic(sim_params['lambda_A'], sim_params['simulation_time'], sim_params['slot_duration'])
+            arrivals = [0] + generate_poisson_traffic(sim_params['lambda_A'], sim_params['simulation_time'], sim_params['slot_duration']).tolist()
         
         node = CsmaCaTx(f"Tx_Node_{tx_node['id']}", tx_node['cd'],sim_params, arrivals, visualizer)
         network.add(node)
@@ -55,7 +56,7 @@ def create_and_run_simulation(params):
         node = CsmaCaAp(f"AP_Node_{ap_node['id']}", ap_node['cd'],sim_params, visualizer)
         network.add(node)
 
-    visualizer.initialize(network.nodes)
+    # visualizer.initialize(network.nodes)
     network.print_network_structure()
     network.run()
 

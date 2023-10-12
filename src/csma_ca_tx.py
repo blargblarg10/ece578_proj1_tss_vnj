@@ -19,6 +19,7 @@ from utility.logger_config import logger
 from src.proj_data_classes import Event, NodeType
 from enum import Enum, auto
 import random
+from math import ceil
 
 class TX_STATE(Enum):
     WAITING_FOR_ACK = auto()
@@ -36,9 +37,14 @@ class CsmaCaTx:
         self.CW_MIN = params['CW0']
         self.CW_MAX = params['CWmax']
         self.TX_ARRIVAL_LIST = packet_arrival_times
+        self.params = params
         
-        self.PACKAGE_LENGTH = int(params['data_frame_size'] / (params['bandwidth'] * (2 ** 20)) / (params['slot_duration'] * 10 ** -6))
-
+        bandwidth = params['bandwidth']
+        slot_duration = params['slot_duration']
+        self.packet_size = params['data_frame_size'] * 8
+        
+        self.PACKAGE_LENGTH = ceil(self.packet_size / (bandwidth * slot_duration)
+)
         # Variables for Sender
         self.backoff = 0
         self.backoff_start = 0
@@ -47,6 +53,8 @@ class CsmaCaTx:
         self.collision_cnt = 0    
         self.package_end = 0            
         self.event = None
+        
+        self.successful_transmissions = 0
         
         # Histor of for the Sender
         self.history = []
@@ -62,7 +70,7 @@ class CsmaCaTx:
 
 
     def set_event(self, timestamp):
-        self.event = Event("tx", self.ID, timestamp, self.PACKAGE_LENGTH, self.package_end)
+        self.event = Event(NodeType.TX, self.ID, timestamp, self.PACKAGE_LENGTH, self.package_end)
     
     def set_backoff(self):
         """
@@ -82,7 +90,7 @@ class CsmaCaTx:
         self.backoff_start = event_timestamp
         
         # Add Backoff
-        event_timestamp += self.DIFS + self.backoff
+        event_timestamp += self.backoff
         
         # Determine the Expected ACK Slot
         self.expected_ack_slot = event_timestamp + self.PACKAGE_LENGTH + self.SIFS
@@ -114,7 +122,7 @@ class CsmaCaTx:
         self.backoff = self.set_backoff()
         
         # Start time will be when this event was supposed to finish
-        event_timestamp = self.package_end + 1
+        event_timestamp = self.package_end
         
         # Determine Timestampe
         event_timestamp = self.determine_timestamps(event_timestamp)
@@ -126,20 +134,24 @@ class CsmaCaTx:
         """
         Handles how the node reacts to a received event when it is in the waiting for ACK state.
         :param event: The event to be processed.
-        """
-        # ACK Received
-        if event.node_type == NodeType.AP:
-            # ACK Received in Wrong Slot (Collision)
-            if event.timestamp != self.expected_ack_slot:
-                self.collision_process()
-            # ACK Received in Correct Slot
-            else:
-                self.collision_cnt = 0
-                self.event = None
-                self.state = self.TRANSMITTING
+        """        
+
         # Event time beyond expected ACK slot (Collision)
-        elif event.timestamp > self.expected_ack_slot:
+        if event.timestamp > self.expected_ack_slot:
             logger.error(f"TX_NODE_{self.ID}: Did not receive ACK from AP in time. Simulation Failed.")
+            quit()
+        elif event.data_type == NodeType.COLLISION or event.timestamp != self.expected_ack_slot:
+            # COLLISION
+            self.collision_process()
+            self.state = TX_STATE.TRANSMITTING
+        elif event.data_type == NodeType.AP:
+            # ACK Received
+            self.successful_transmissions += 1
+            self.collision_cnt = 0
+            self.event = None
+            self.state = TX_STATE.TRANSMITTING
+        else:
+            logger.err(f"TX_NODE_{self.ID}: Invalid Event Type: {event.data_type}. Simulation Failed.")
             quit()
             
     
@@ -156,11 +168,11 @@ class CsmaCaTx:
             return
         
         # Check if the event is within the backoff window
-        if event.timestamp < self.backoff_start + self.backoff:
-            self.backoff -= event.timestamp - self.backoff_start
+        if self.backoff_start - event.timestamp < self.backoff:
+            self.backoff = self.backoff_start + self.backoff - event.timestamp
         
         # Set the start time to the end of the event
-        event_timestamp = expected_slot_free + 1
+        event_timestamp = expected_slot_free
         
         # Set Timestamps for the event
         event_timestamp = self.determine_timestamps(event_timestamp)
@@ -173,13 +185,15 @@ class CsmaCaTx:
         Receives a BroadcastEvent and processes it accordingly.
         :param event: The event to be processed.
         """
-        if self.state == TX_STATE.WAITING_FOR_ACK:
+        if self.event is None:
+            return
+        elif self.state == TX_STATE.WAITING_FOR_ACK:
            self.wait_for_ack_process(event)
-        elif event.node_type != NodeType.COLLISION:
+        elif event.data_type != NodeType.COLLISION:
            # Collision is not a true event, it just notifies the node that a collision has occurred.
            # If this node is not looking for an ACK, id does not care
            self.transmit_process(event) 
-            
+
     
     def declare_event(self, timestamp):
         """
@@ -194,7 +208,7 @@ class CsmaCaTx:
         elif self.event:
             return self.event
         
-        # If an event is not already made, and their are arrivals
+        # If an event is not already made, and there are arrivals
         elif self.TX_ARRIVAL_LIST:
             # New Packet. Retrieve next packet arrival time
             event_arr = self.TX_ARRIVAL_LIST.pop(0)
@@ -213,3 +227,7 @@ class CsmaCaTx:
             return self.event
         else:
             return None
+        
+    def print_statistics(self):
+        print(f"TX: {self.ID}: Successful Transmission: {self.successful_transmissions}")
+        print(f"TX: {self.ID}: Throughput: {self.successful_transmissions * self.packet_size / self.params['simulation_time'] / 10**3:.2f} Kbps")

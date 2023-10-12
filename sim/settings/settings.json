@@ -3,13 +3,13 @@
     "ACK_size": 3,
     "RTS_size": 3,
     "CTS_size": 3,
-    "slot_duration": 10,
+    "slot_duration": 10e-6,
     "DIFS_size": 4,
     "SIFS_size": 1,
-    "bandwidth": 10,
+    "bandwidth": 10e6,
     "CW0": 8,
     "CWmax": 512,
-    "lambda_A": 100,
+    "lambda_A": 1000,
     "simulation_time": 10
   }
   

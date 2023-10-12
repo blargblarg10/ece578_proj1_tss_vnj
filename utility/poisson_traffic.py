@@ -12,19 +12,22 @@ def generate_poisson_traffic(lam, simulation_time, slot_duration):
     Returns:
     list: A list of arrival times in terms of frame numbers.
     """
-    n = int(lam * simulation_time)  # Calculate the number of random numbers needed
-    U = np.random.uniform(0, 1, n)  # Generate n uniformly distributed random numbers in (0, 1)
-    X = -1/lam * np.log(1 - U)      # Convert U to exponentially distributed numbers
-    arrival_times = np.round(X / (slot_duration * 1e-6)).astype(int)  # Convert arrival times to frame numbers
-    # Print average arrival rate
-    arrival_times = np.cumsum(arrival_times)    # Accumulate the inter-arrival times to get arrival times
-    return arrival_times
+    # Generate uniform distribution
+    uniform_distribution = np.random.uniform(low=0, high=1, size=int(lam * (simulation_time * 2)))
+    # Convert uniform distribution to exponential distribution
+    exponential_distribution = -(1 / lam) * np.log(1 - uniform_distribution)
+    # Transform the packet transmittion time to interpacket slot times
+    interpacket_time_slot = np.ceil(exponential_distribution / (slot_duration)).astype(int)
+    # Find the approximated packet slot arrival time
+    arrival_time_slot = np.cumsum(interpacket_time_slot)
+
+    return arrival_time_slot
 
 def main():
     # Example usage:
-    lam = 100  # Rate of arrivals (e.g., 100 frames per second)
-    simulation_time = 10  # Total simulation time (e.g., 10 seconds)
-    slot_duration = 10  # Slot size (10 microseconds)
+    lam = 2000  # Rate of arrivals (e.g., 100 frames per second)
+    simulation_time = 0.01  # Total simulation time (e.g., 10 seconds)
+    slot_duration = 10e-6  # Slot size (10 microseconds)
     traffic = generate_poisson_traffic(lam, simulation_time, slot_duration)
     print(traffic)
 

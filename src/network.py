@@ -9,7 +9,8 @@ class Network:
     def __init__(self, sim_params):
         logger.debug("Network instance created.")
         self.nodes = []
-        self.slot_limit = int(sim_params['simulation_time']/(sim_params['slot_duration'] * 10 ** -6))
+        self.slot_limit = int(sim_params['simulation_time']/(sim_params['slot_duration']))
+        pass
         # ... (other methods and attributes) ...
         
     def add(self, node):
@@ -61,6 +62,9 @@ class Network:
             for node in self.nodes:
                 if node.declare_event(current_slot) is not None:
                     nodes_w_events.append(node.event)
+            if not nodes_w_events:
+                logger.error("No events to process. Ending simulation.")
+                quit()
             earliest_timestamp = min(event.timestamp for event in nodes_w_events)
             earliest_events = [event for event in nodes_w_events if event.timestamp == earliest_timestamp]
 
@@ -75,12 +79,15 @@ class Network:
                     for event in earliest_events:
                         node.receive_event(event)
 
-            current_slot = earliest_timestamp  # Update current slot to the timestamp of the earliest event
+            current_slot = max([event.nav for event in earliest_events])  # Update current slot to the timestamp of the earliest event
 
-            elapsed_time = time.time() - start_time
-            if elapsed_time > timeout:
-                logger.error("Time limit reached. Ending simulation.")
-                break
+            # elapsed_time = time.time() - start_time
+            # if elapsed_time > timeout:
+            #     logger.error("Time limit reached. Ending simulation.")
+            #     break
+            
+        for node in self.nodes:
+            node.print_statistics()
 
     def broadcast(self, event: Event):
         # Broadcasting logic here
